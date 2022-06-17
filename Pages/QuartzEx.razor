@@ -1,0 +1,120 @@
+﻿@page "/quartzExample"
+@using Microsoft.AspNetCore.SignalR.Client
+@using CompleteQuartzExample.Data.Services
+@using System.Timers
+@inject NavigationManager _NavigationManager
+@inject PoemService  _poemService 
+
+<div class="poem">
+    <div id="Title"> <h3>The Strongest Girl I Ever Knew</h3></div>
+    <div id="Source">
+        <h6>
+            <small>
+                Source: <a href="https://www.familyfriendpoems.com/poem/the-strongest-girl-i-ever-knew"
+                           class="alert-link">https://www.familyfriendpoems.com/poem/the-strongest-girl-i-ever-knew</a>
+            </small>
+        </h6>
+    </div>
+
+    <div id="poemText">
+        @if (poemLines.Count == 0)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+        foreach (var line in poemLines)
+        {
+            <div> <h4> @line  </h4></div>
+        }
+        }
+    </div>
+
+    <div id="Info">
+        @info  
+    </div>
+    <div id="countdown" style=" display:@display;">
+       Will repeat in <span style="color:red">@counter</span> seconds
+
+    </div>
+</div>
+
+<hr />
+
+<h3>Animal Sounds(coming soon)</h3>
+
+<style>
+    .poem {
+        font-family: 'Satisfy', cursive;
+    }
+</style>
+
+@code {
+    string info;
+    string display = "none";
+
+    List<string> poemLines = new List<string>();
+    private HubConnection hubconnection;
+
+
+    private static Timer aTimer;
+    private int counter = 9;
+    public void StartTimer()
+    {
+        aTimer = new System.Timers.Timer(1000);
+        aTimer.Elapsed += CountDownTimer;
+        aTimer.Enabled = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubconnection = new HubConnectionBuilder()
+    .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
+    .Build();
+
+
+        poemLines = _poemService.GetPoemLineList();
+        //  info = "To be continued";
+
+        hubconnection.On<string>("updatePoemList", (msg) =>
+        {
+
+            poemLines = _poemService.GetPoemLineList();
+            if (poemLines.Count != 8)
+            {
+                info = "To be continued";
+                if (poemLines.Count == 1)
+                {
+                    display = "none";
+                }
+            }
+            else
+            {
+                info = "The End!";
+                counter = 9;
+                StartTimer();
+                display = "block";
+            }
+            StateHasChanged();
+        });
+
+
+        await hubconnection.StartAsync();
+
+
+
+    }
+
+    public void CountDownTimer(Object source, ElapsedEventArgs e)
+    {
+        if (counter > 0)
+        {
+            counter -= 1;
+        }
+        else
+        {
+            aTimer.Enabled = false;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+}
