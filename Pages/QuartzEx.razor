@@ -53,7 +53,7 @@
 
 <RadzenCard>
     <RadzenTemplateForm TItem="SingleJob" Data="@jobPara" Submit="@Submit">
-        <div class="row">
+        <div class="row align-items-baseline">
         
             <div class="col-md-3">
                 Select an animal you like
@@ -63,7 +63,7 @@
             </div>
 
          
-            <div class="col-md-3">
+            <div class="col-md-2">
                 Interval(second)
                 <RadzenNumeric @bind-Value="jobPara.interval" Name="Interval" TValue="int" Min="1" Max="10" Class="w-100" />
                 <RadzenNumericRangeValidator Component="Interval" Min="1" Max="10" Text="Interval should be between 1 and 10" Popup=true Style="position: absolute" />
@@ -87,7 +87,8 @@
     
 
 
-            <div class="col-md-1">
+            <div class="col-md-2">
+               
                 <RadzenButton ButtonType="ButtonType.Submit" Text="Try" ButtonStyle="ButtonStyle.Secondary" />
             </div>
 
