@@ -44,7 +44,7 @@ namespace CompleteQuartzExample
        services.AddSingleton<IJobFactory, SingletonJobFactory>();
             services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
             services.AddSingleton<PrintJob>();
-            
+            services.AddScoped<AnimalService>();
                     services.AddSingleton<PoemService>();
             services.AddSingleton<QuartzMultiJob>();
             services.AddSingleton(new JobSchedule(

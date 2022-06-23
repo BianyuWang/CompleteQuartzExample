@@ -10,7 +10,7 @@ namespace CompleteQuartzExample.Data.Services
     public class PoemService
     {
       
-        static int _count = 0;
+ 
         internal readonly IScheduler scheduler;
         public PoemService(IScheduler quartz)
         {

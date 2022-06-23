@@ -8,6 +8,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="5.0.12" />
     <PackageReference Include="Quartz.AspNetCore" Version="3.3.3" />
+    <PackageReference Include="Radzen.Blazor" Version="3.19.1" />
   </ItemGroup>
 
 </Project>

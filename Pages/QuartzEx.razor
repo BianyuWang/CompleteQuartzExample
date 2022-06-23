@@ -2,8 +2,18 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using CompleteQuartzExample.Data.Services
 @using System.Timers
+@using CompleteQuartzExample.Data.IJobs;
+@using CompleteQuartzExample.Data.QuartzService;
+@using CompleteQuartzExample.Hubs;
+@using CompleteQuartzExample.Data.Models
+@inject AnimalService AnimalService
+
+
 @inject NavigationManager _NavigationManager
-@inject PoemService  _poemService 
+@inject PoemService  _poemService
+
+
+
 
 <div class="poem">
     <div id="Title"> <h3>The Strongest Girl I Ever Knew</h3></div>
@@ -23,26 +33,77 @@
         }
         else
         {
-        foreach (var line in poemLines)
-        {
-            <div> <h4> @line  </h4></div>
-        }
+            foreach (var line in poemLines)
+            {
+                <div> <h4> @line  </h4></div>
+            }
         }
     </div>
 
     <div id="Info">
-        @info  
+        @info
     </div>
     <div id="countdown" style=" display:@display;">
-       Will repeat in <span style="color:red">@counter</span> seconds
+        Will repeat in <span style="color:red">@counter</span> seconds
 
     </div>
 </div>
 
 <hr />
 
-<h3>Animal Sounds(coming soon)</h3>
+<h3>Animal Sounds(working, but not fancy, to be continued)</h3>
 
+<RadzenCard>
+    <RadzenTemplateForm TItem="SingleJob" Data="@jobPara" Submit="@Submit">
+        <div class="row">
+            <div class="col-md-2 align-items-center d-flex">
+                <RadzenLabel Text="Select an animal you like">
+                </RadzenLabel>
+            </div>
+            <div class="col-md-2">
+                <RadzenDropDown @bind-Value="jobPara.animal.Name" AllowClear="true" TValue="string" Class="w-100"
+                                Data=@(animals.Select(c => c.Name).Distinct())
+                                Change="@onAnimalChange" />
+            </div>
+
+            <div class="col-md-1 align-items-center d-flex">
+                <RadzenLabel Text="Interval">
+                </RadzenLabel>
+            </div>
+            <div class="col-md-1">
+                <RadzenNumeric @bind-Value="jobPara.interval" Name="Interval" TValue="int" Min="1" Max="10" Class="w-100" />
+                <RadzenNumericRangeValidator Component="Interval" Min="1" Max="10" Text="Interval should be between 1 and 10" Popup=true Style="position: absolute" />
+                <RadzenRequiredValidator Component="Interval" Text="Interval number is required" Style="position: relative" />
+
+            </div>
+            <div class="col-md-1 align-items-center d-flex">
+                <RadzenLabel Text="Repeat">
+                </RadzenLabel>
+            </div>
+            <div class="col-md-1">
+                <RadzenNumeric @bind-Value="jobPara.repeat" Name="Repeat" />
+                <RadzenNumericRangeValidator Component="Repeat" Min="1" Max="10" Text="Repeat should be between 1 and 10" Popup=false Style="position: absolute" />
+                <RadzenRequiredValidator Component="Repeat" Text="Repeat number is required" Style="position: relative" />
+
+            </div>
+            <div class="col-md-2">
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Secondary" ButtonStyle="ButtonStyle.Secondary" />
+            </div>
+
+        </div>
+
+  
+    
+    </RadzenTemplateForm>
+</RadzenCard>
+@if (SingleJobMsg.Count > 0)
+{
+@foreach (var m in SingleJobMsg)
+{
+    <p>
+        @m
+    </p>
+}}
 <style>
     .poem {
         font-family: 'Satisfy', cursive;
@@ -50,12 +111,16 @@
 </style>
 
 @code {
+    List<string> SingleJobMsg = new List<string>();
+
     string info;
     string display = "none";
 
     List<string> poemLines = new List<string>();
     private HubConnection hubconnection;
 
+    List<Animal> animals;
+    SingleJob jobPara = new SingleJob();
 
     private static Timer aTimer;
     private int counter = 9;
@@ -66,15 +131,33 @@
         aTimer.Enabled = true;
     }
 
+    class Model
+    {
+        public decimal Quantity { get; set; }
+    }
+    Model model = new Model();
+
+
     protected override async Task OnInitializedAsync()
     {
+        animals = AnimalService.Animals;
+        jobPara.animal = animals.FirstOrDefault();
         hubconnection = new HubConnectionBuilder()
-    .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
-    .Build();
+.WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
+.Build();
 
 
         poemLines = _poemService.GetPoemLineList();
         //  info = "To be continued";
+
+
+
+        hubconnection.On<string>("updateMultiTrigger", (msg) =>
+        {
+            SingleJobMsg.Add(msg);
+            StateHasChanged();
+        });
+
 
         hubconnection.On<string>("updatePoemList", (msg) =>
         {
@@ -104,6 +187,19 @@
 
 
     }
+    public async Task Submit(SingleJob a) {
+
+        await AnimalService.AddJob(a);
+
+    }
+
+    public void onAnimalChange(object value)
+    {
+
+        var selection =  animals.Where(a => a.Name==value.ToString()).First();
+        if (selection != null)
+            jobPara.animal = selection;
+    }
 
     public void CountDownTimer(Object source, ElapsedEventArgs e)
     {
@@ -117,4 +213,18 @@
         }
         InvokeAsync(StateHasChanged);
     }
+
+    async Task addJob()
+    {
+
+        //await AnimalService.AddJob();
+
+        //List<string> jobs = AnimalService.GetTriggers();
+
+
+    }
+
+
+
+
 }

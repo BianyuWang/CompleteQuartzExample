@@ -18,7 +18,7 @@ namespace CompleteQuartzExample.Data
 
     public class WeatherForecastService: IWeather
     {
-        static int _count = 0;
+      
         internal readonly IScheduler scheduler;
       
         public WeatherForecastService(IScheduler quartz)
