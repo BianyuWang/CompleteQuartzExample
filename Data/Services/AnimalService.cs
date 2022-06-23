@@ -14,19 +14,19 @@ namespace CompleteQuartzExample.Data.Services
 
         public static readonly List<Animal> Animals = new List<Animal>()
      {
-           new Animal(){ Id = 1, Name="Alligator",Sound ="Bark"},
-            new Animal(){ Id = 2, Name="Ant",Sound ="Ant"},
-          new Animal(){ Id = 3, Name="Bat",Sound ="poo"},
-         new Animal(){ Id = 4, Name="Bear",Sound ="fink"},
-         new Animal(){ Id = 5, Name="Bird",Sound ="twitter"},
-         new Animal(){ Id = 6, Name="Cat",Sound ="meow"},
-                new Animal(){ Id = 7, Name="Chicken",Sound ="chuck"},
-                       new Animal(){ Id = 8, Name="Cat",Sound ="meow"},
-                              new Animal(){ Id = 9, Name="Crane",Sound ="rar"},
-                                     new Animal(){ Id = 10, Name="Deer",Sound ="bray"},
-                                            new Animal(){ Id = 11, Name="Ghost",Sound ="Whispering...."},
-                                             new Animal(){ Id = 12, Name="Monster",Sound ="Roaring...."},
-                                              new Animal(){ Id = 13, Name="Bean Shooter",Sound ="Piu Piu...."}
+           new Animal(){ Name="Alligator",Sound ="Bark"},
+            new Animal(){ Name="Ant",Sound ="Ant"},
+          new Animal(){  Name="Bat",Sound ="poo"},
+         new Animal(){  Name="Bear",Sound ="fink"},
+         new Animal(){  Name="Bird",Sound ="twitter"},
+         new Animal(){ Name="Cat",Sound ="meow"},
+                new Animal(){  Name="Chicken",Sound ="chuck"},
+                       new Animal(){  Name="Cat",Sound ="meow"},
+                              new Animal(){ Name="Crane",Sound ="rar"},
+                                     new Animal(){ Name="Deer",Sound ="bray"},
+                                            new Animal(){  Name="Ghost",Sound ="Whispering...."},
+                                             new Animal(){  Name="Monster",Sound ="Roaring...."},
+                                              new Animal(){ Name="Bean Shooter",Sound ="Piu Piu...."}
 
 
 

@@ -2,9 +2,7 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using CompleteQuartzExample.Data.Services
 @using System.Timers
-@using CompleteQuartzExample.Data.IJobs;
-@using CompleteQuartzExample.Data.QuartzService;
-@using CompleteQuartzExample.Hubs;
+@using System.Linq
 @using CompleteQuartzExample.Data.Models
 @inject AnimalService AnimalService
 
@@ -61,8 +59,8 @@
                 </RadzenLabel>
             </div>
             <div class="col-md-2">
-                <RadzenDropDown @bind-Value="jobPara.animal.Name" AllowClear="true" TValue="string" Class="w-100"
-                                Data=@(animals.Select(c => c.Name).Distinct())
+                <RadzenDropDown @bind-Value="AnimalName" AllowClear="true" TValue="string" Class="w-100"
+                                Data=@(AnimalService.Animals.Select(c => c.Name).Distinct())
                                 Change="@onAnimalChange" />
             </div>
 
@@ -115,11 +113,11 @@
 
     string info;
     string display = "none";
-
+    string AnimalName= AnimalService.Animals.FirstOrDefault().Name ;
     List<string> poemLines = new List<string>();
     private HubConnection hubconnection;
 
-    List<Animal> animals;
+    List<Animal> animals= AnimalService.Animals;
     SingleJob jobPara = new SingleJob();
 
     private static Timer aTimer;
@@ -140,17 +138,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        animals = AnimalService.Animals;
-        jobPara.animal = animals.FirstOrDefault();
+
         hubconnection = new HubConnectionBuilder()
 .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
 .Build();
 
-
         poemLines = _poemService.GetPoemLineList();
-        //  info = "To be continued";
 
-
+        jobPara.animal = animals.FirstOrDefault();
 
         hubconnection.On<string>("updateMultiTrigger", (msg) =>
         {
@@ -195,10 +190,10 @@
 
     public void onAnimalChange(object value)
     {
-
-        var selection =  animals.Where(a => a.Name==value.ToString()).First();
+        AnimalName = value.ToString();
+        var selection = AnimalService.Animals.Where(a => a.Name.Equals(value.ToString())).FirstOrDefault();
         if (selection != null)
-            jobPara.animal = selection;
+        jobPara.animal = selection;
     }
 
     public void CountDownTimer(Object source, ElapsedEventArgs e)
@@ -213,17 +208,6 @@
         }
         InvokeAsync(StateHasChanged);
     }
-
-    async Task addJob()
-    {
-
-        //await AnimalService.AddJob();
-
-        //List<string> jobs = AnimalService.GetTriggers();
-
-
-    }
-
 
 
 
