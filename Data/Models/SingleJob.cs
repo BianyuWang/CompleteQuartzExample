@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Radzen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace CompleteQuartzExample.Data.Models
         public Animal animal { get; set; }
         public int repeat { get; set; }
         public int interval { get; set; }
+        public ProgressBarStyle barStyle { get; set; }
         public SingleJob()
         {
                 animal = new Animal();

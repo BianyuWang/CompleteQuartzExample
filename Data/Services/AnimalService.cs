@@ -54,8 +54,10 @@ namespace CompleteQuartzExample.Data.Services
 
                 IJobDetail job = JobBuilder.Create<QuartzMultiJob>().WithIdentity(_count.ToString(), "JobAdded")
                     .UsingJobData("time", runTime)
+                    .UsingJobData("totalRepeat",singleJob.repeat)
                     .UsingJobData("animal",singleJob.animal.Name)
                        .UsingJobData("sound", singleJob.animal.Sound)
+                        .UsingJobData("styleStr", singleJob.barStyle.ToString())
                     .Build();
               await  scheduler.ScheduleJob(job, trigger);
                await scheduler.Start();
@@ -71,35 +73,35 @@ namespace CompleteQuartzExample.Data.Services
         }
 
 
-        public List<string> GetTriggers()
-        {
+        //public List<string> GetTriggers()
+        //{
 
-            List<string> msg = new List<string>();
+        //    List<string> msg = new List<string>();
 
 
-            //  var allJobKeys=   scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("Group1") ).Result.ToList();
-            var allJobKeys = scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()).Result.ToList();
+        //    //  var allJobKeys=   scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("Group1") ).Result.ToList();
+        //    var allJobKeys = scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()).Result.ToList();
 
-            if (allJobKeys != null)
-            {
-                foreach (var v in allJobKeys)
-                {
-                    if (v.Group == "JobAdded")
-                    {
-                        int time = scheduler.GetJobDetail(new JobKey(v.Name, "JobAdded")).Result.JobDataMap.GetInt("time");
-                        string m = $"job name :{ v.Name},run time: {time}";
+        //    if (allJobKeys != null)
+        //    {
+        //        foreach (var v in allJobKeys)
+        //        {
+        //            if (v.Group == "JobAdded")
+        //            {
+        //                int time = scheduler.GetJobDetail(new JobKey(v.Name, "JobAdded")).Result.JobDataMap.GetInt("time");
+        //                string m = $"job name :{ v.Name},run time: {time}";
 
-                        //   StaticList.multiJobTriggerInfo(v.Name, time);
-                        return StaticList._multiJobTriggerList;
-                    }
+        //                //   StaticList.multiJobTriggerInfo(v.Name, time);
+        //                return StaticList._multiJobTriggerList;
+        //            }
 
-                }
-            }
+        //        }
+        //    }
 
-            return null;
-            //    return StaticList._multiJobTriggerList;
+        //    return null;
+        //    //    return StaticList._multiJobTriggerList;
 
-        }
+        //}
 
     }
 }

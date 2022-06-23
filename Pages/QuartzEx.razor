@@ -54,54 +54,78 @@
 <RadzenCard>
     <RadzenTemplateForm TItem="SingleJob" Data="@jobPara" Submit="@Submit">
         <div class="row">
-            <div class="col-md-2 align-items-center d-flex">
-                <RadzenLabel Text="Select an animal you like">
-                </RadzenLabel>
-            </div>
-            <div class="col-md-2">
+        
+            <div class="col-md-3">
+                Select an animal you like
                 <RadzenDropDown @bind-Value="AnimalName" AllowClear="true" TValue="string" Class="w-100"
                                 Data=@(AnimalService.Animals.Select(c => c.Name).Distinct())
                                 Change="@onAnimalChange" />
             </div>
 
-            <div class="col-md-1 align-items-center d-flex">
-                <RadzenLabel Text="Interval">
-                </RadzenLabel>
-            </div>
-            <div class="col-md-1">
+         
+            <div class="col-md-3">
+                Interval(second)
                 <RadzenNumeric @bind-Value="jobPara.interval" Name="Interval" TValue="int" Min="1" Max="10" Class="w-100" />
                 <RadzenNumericRangeValidator Component="Interval" Min="1" Max="10" Text="Interval should be between 1 and 10" Popup=true Style="position: absolute" />
                 <RadzenRequiredValidator Component="Interval" Text="Interval number is required" Style="position: relative" />
 
             </div>
-            <div class="col-md-1 align-items-center d-flex">
-                <RadzenLabel Text="Repeat">
-                </RadzenLabel>
-            </div>
-            <div class="col-md-1">
+       
+            <div class="col-md-2">
+                Repeat
                 <RadzenNumeric @bind-Value="jobPara.repeat" Name="Repeat" />
                 <RadzenNumericRangeValidator Component="Repeat" Min="1" Max="10" Text="Repeat should be between 1 and 10" Popup=false Style="position: absolute" />
                 <RadzenRequiredValidator Component="Repeat" Text="Repeat number is required" Style="position: relative" />
 
             </div>
-            <div class="col-md-2">
-                <RadzenButton ButtonType="ButtonType.Submit" Text="Secondary" ButtonStyle="ButtonStyle.Secondary" />
+            <div class="col-md-3">
+                Styles
+                <RadzenDropDown AllowClear="true" TValue="string" Class="w-100"
+                                Data=@progressBarStyles.Select(p=>p.ToString())
+                                Change="@onStyleChange" />
             </div>
+    
+
+
+            <div class="col-md-1">
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Try" ButtonStyle="ButtonStyle.Secondary" />
+            </div>
+
+
 
         </div>
 
-  
-    
+
+
     </RadzenTemplateForm>
 </RadzenCard>
-@if (SingleJobMsg.Count > 0)
+@if (mulJobProgress.Count > 0)
 {
-@foreach (var m in SingleJobMsg)
-{
-    <p>
-        @m
-    </p>
-}}
+    @foreach (var m in mulJobProgress)
+    {if (m.current > m.total)
+            m.current = m.total;
+        var result = ((double)m.current / (double)m.total) * 100.0;
+        <div class="row w-100">
+
+            <div class="col-md-1">
+                progress:
+            </div>
+            <div class="col-md-5" style="margin-top:15px;">
+                <RadzenProgressBar ProgressBarStyle="m.style" @bind-Value="@result" />
+            </div>
+            <div>
+                @m.animal.Name, 
+                @for (int i = 0; i < m.current; i++)
+                {<span>@m.animal.Sound, </span>
+
+                    if (i ==m.total-1)
+                    { 
+            <span> last interation, will stop</span>
+                    }
+                }
+            </div>
+        </div>
+    }}
 <style>
     .poem {
         font-family: 'Satisfy', cursive;
@@ -109,15 +133,21 @@
 </style>
 
 @code {
-    List<string> SingleJobMsg = new List<string>();
+    List<MulJobProgress> mulJobProgress = new List<MulJobProgress>();
+
+
+
 
     string info;
     string display = "none";
-    string AnimalName= AnimalService.Animals.FirstOrDefault().Name ;
-    List<string> poemLines = new List<string>();
+    string AnimalName = AnimalService.Animals.FirstOrDefault().Name;
+    List<string>
+        poemLines = new List<string>
+            ();
     private HubConnection hubconnection;
-
-    List<Animal> animals= AnimalService.Animals;
+    List<ProgressBarStyle> progressBarStyles;
+    List<Animal>
+        animals = AnimalService.Animals;
     SingleJob jobPara = new SingleJob();
 
     private static Timer aTimer;
@@ -139,42 +169,61 @@
     protected override async Task OnInitializedAsync()
     {
 
+        progressBarStyles =   Enum.GetValues(typeof(ProgressBarStyle)).Cast<ProgressBarStyle>().ToList();
         hubconnection = new HubConnectionBuilder()
-.WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
-.Build();
+        .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
+        .Build();
 
         poemLines = _poemService.GetPoemLineList();
 
         jobPara.animal = animals.FirstOrDefault();
 
-        hubconnection.On<string>("updateMultiTrigger", (msg) =>
-        {
-            SingleJobMsg.Add(msg);
-            StateHasChanged();
-        });
-
-
-        hubconnection.On<string>("updatePoemList", (msg) =>
-        {
-
-            poemLines = _poemService.GetPoemLineList();
-            if (poemLines.Count != 8)
+        hubconnection.On<string, string, int, int, string, string,string>
+            ("updateMultiTrigger", (msg, key, current, total, animalName, sound,styleStr) =>
             {
-                info = "To be continued";
-                if (poemLines.Count == 1)
+                var job = mulJobProgress.Where(j => j.key.Equals(key)).FirstOrDefault();
+
+                if (job == null)
                 {
-                    display = "none";
+                    job = new MulJobProgress();
+                    job.current = current;
+                    job.key = key;
+                    job.animal.Name = animalName;
+                    job.animal.Sound = sound;
+                    job.color = "red";
+                    job.total = total;
+                    job.current = current;
+                    job.style = (ProgressBarStyle)Enum.Parse(typeof(ProgressBarStyle), styleStr);
+                    mulJobProgress.Add(job);
                 }
-            }
-            else
+                job.current = current;
+                //  SingleJobMsg.Add(msg);
+                StateHasChanged();
+            });
+
+
+        hubconnection.On<string>
+            ("updatePoemList", (msg) =>
             {
-                info = "The End!";
-                counter = 9;
-                StartTimer();
-                display = "block";
-            }
-            StateHasChanged();
-        });
+
+                poemLines = _poemService.GetPoemLineList();
+                if (poemLines.Count != 8)
+                {
+                    info = "To be continued";
+                    if (poemLines.Count == 1)
+                    {
+                        display = "none";
+                    }
+                }
+                else
+                {
+                    info = "The End!";
+                    counter = 9;
+                    StartTimer();
+                    display = "block";
+                }
+                StateHasChanged();
+            });
 
 
         await hubconnection.StartAsync();
@@ -182,18 +231,25 @@
 
 
     }
-    public async Task Submit(SingleJob a) {
+    public async Task Submit(SingleJob a)
+    {
 
         await AnimalService.AddJob(a);
 
     }
 
+    public void onStyleChange(object value)
+    {
+        //   AnimalName = value.ToString();
+
+        jobPara.barStyle = (ProgressBarStyle)Enum.Parse(typeof(ProgressBarStyle), value.ToString());
+    }
     public void onAnimalChange(object value)
     {
-        AnimalName = value.ToString();
+        //   AnimalName = value.ToString();
         var selection = AnimalService.Animals.Where(a => a.Name.Equals(value.ToString())).FirstOrDefault();
         if (selection != null)
-        jobPara.animal = selection;
+            jobPara.animal = selection;
     }
 
     public void CountDownTimer(Object source, ElapsedEventArgs e)
@@ -211,4 +267,4 @@
 
 
 
-}
+                            }
