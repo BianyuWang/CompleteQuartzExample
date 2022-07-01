@@ -6,10 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Quartz.MisfireInstruction;
 
 namespace CompleteQuartzExample.Data.Services
 {
-    public class AnimalService
+
+
+public class AnimalService
     {
 
         public static readonly List<Animal> Animals = new List<Animal>()
@@ -40,6 +43,42 @@ namespace CompleteQuartzExample.Data.Services
             scheduler = quartz;
 
         }
+
+        public void PauseJob(bool Pause)
+        {
+            //var SingleJobKeys = scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("JobAdded")).Result.ToList();
+            var DEFAULTJob = scheduler.GetJobKeys(GroupMatcher<JobKey>.GroupEquals("DEFAULT")).Result.SingleOrDefault();
+            var DEFAULTTrigger= scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.GroupEquals("DEFAULT")).Result.SingleOrDefault();
+
+         var oldtrigger =   scheduler.GetTrigger(DEFAULTTrigger);
+            TriggerBuilder triggerBuilder = TriggerBuilder.Create();
+      
+
+            if (DEFAULTTrigger != null && Pause)
+            {
+              //  scheduler.Shutdown();
+           scheduler.PauseTrigger(DEFAULTTrigger);
+               // scheduler.PauseJob(DEFAULTJob);
+            }
+            if (DEFAULTJob != null && !Pause)
+            {
+               // scheduler.Shutdown(DEFAULTTrigger);
+                ICronTrigger trigger =
+                (ICronTrigger)TriggerBuilder
+                .Create()
+                .WithIdentity($"newtrigger")
+                .WithCronSchedule( "0/10 * * * * ?")       
+                .WithDescription("0/10 * * * * ?")
+                .Build();
+
+                scheduler.RescheduleJob(DEFAULTTrigger, trigger);
+
+               // scheduler.ResumeTrigger(DEFAULTTrigger);
+
+            }
+    
+        }
+
         public async Task<bool> AddJob(SingleJob singleJob)
         {
             

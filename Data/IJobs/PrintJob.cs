@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace CompleteQuartzExample.Data.IJobs
 {
+   
     [DisallowConcurrentExecution]  // prevents Quartz.NET from trying to run the same job concurrently.
     public class PrintJob : IJob
     {
@@ -43,5 +44,7 @@ namespace CompleteQuartzExample.Data.IJobs
        
             return Task.CompletedTask;
         }
+
+         
     }
 }

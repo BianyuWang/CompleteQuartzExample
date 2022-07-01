@@ -6,15 +6,23 @@
 @using CompleteQuartzExample.Data.Models
 @inject AnimalService AnimalService
 
-
 @inject NavigationManager _NavigationManager
 @inject PoemService  _poemService
 
 
 
 
+
 <div class="poem">
-    <div id="Title"> <h3>The Strongest Girl I Ever Knew</h3></div>
+    <div class="row">
+        <div id="Title"> <h3>The Strongest Girl I Ever Knew</h3></div>
+        <div class="jobBTN">
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="pause" Size="ButtonSize.Small" Class="m-1" Disabled="@disableP"  Click="(arg)=>pauseDefault(true)" />
+                  </div>
+        <div class="jobBTN">
+            <RadzenButton  ButtonStyle="ButtonStyle.Primary" Icon="cached" Size="ButtonSize.Small" Disabled="disableR"  Class="m-1" Click="(arg)=>pauseDefault(false)"  />
+        </div>
+    </div>
     <div id="Source">
         <h6>
             <small>
@@ -54,7 +62,7 @@
 <RadzenCard>
     <RadzenTemplateForm TItem="SingleJob" Data="@jobPara" Submit="@Submit">
         <div class="row align-items-baseline">
-        
+
             <div class="col-md-3">
                 Select an animal you like
                 <RadzenDropDown @bind-Value="AnimalName" AllowClear="true" TValue="string" Class="w-100"
@@ -62,7 +70,7 @@
                                 Change="@onAnimalChange" />
             </div>
 
-         
+
             <div class="col-md-2">
                 Interval(second)
                 <RadzenNumeric @bind-Value="jobPara.interval" Name="Interval" TValue="int" Min="1" Max="10" Class="w-100" />
@@ -70,7 +78,7 @@
                 <RadzenRequiredValidator Component="Interval" Text="Interval number is required" Style="position: relative" />
 
             </div>
-       
+
             <div class="col-md-2">
                 Repeat
                 <RadzenNumeric @bind-Value="jobPara.repeat" Name="Repeat" />
@@ -84,11 +92,11 @@
                                 Data=@progressBarStyles.Select(p=>p.ToString())
                                 Change="@onStyleChange" />
             </div>
-    
+
 
 
             <div class="col-md-2">
-               
+
                 <RadzenButton ButtonType="ButtonType.Submit" Text="Try" ButtonStyle="ButtonStyle.Secondary" />
             </div>
 
@@ -99,6 +107,7 @@
 
 
     </RadzenTemplateForm>
+
 </RadzenCard>
 @if (mulJobProgress.Count > 0)
 {
@@ -131,13 +140,18 @@
     .poem {
         font-family: 'Satisfy', cursive;
     }
+
+    .jobBTN {
+      font-family:'Times New Roman';
+      margin-left: 20px;
+    }
 </style>
 
 @code {
     List<MulJobProgress> mulJobProgress = new List<MulJobProgress>();
 
-
-
+    bool disableR = true;
+    bool disableP = false;
 
     string info;
     string display = "none";
@@ -160,16 +174,19 @@
         aTimer.Enabled = true;
     }
 
-    class Model
+
+    void pauseDefault(bool pause)
     {
-        public decimal Quantity { get; set; }
+       disableR = disableP ? true : false;
+        disableP = pause;
+        AnimalService.PauseJob(pause);
+        StateHasChanged();
     }
-    Model model = new Model();
 
 
     protected override async Task OnInitializedAsync()
     {
-
+       disableR = disableP ? false : true;
         progressBarStyles =   Enum.GetValues(typeof(ProgressBarStyle)).Cast<ProgressBarStyle>().ToList();
         hubconnection = new HubConnectionBuilder()
         .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CompleteQuartzExample.Data.JobSchedules;
 using Quartz.Impl.Matchers;
+using Quartz.Impl.Triggers;
 
 namespace CompleteQuartzExample.Data.QuartzService
 {
@@ -59,6 +60,7 @@ namespace CompleteQuartzExample.Data.QuartzService
                 .Create(jobType)
                 .WithIdentity(jobType.FullName)
                 .WithDescription(jobType.Name)
+             
                 .Build();
         }
 
@@ -66,16 +68,22 @@ namespace CompleteQuartzExample.Data.QuartzService
         { 
         var jobKey = Scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()).Result.ToList();
 
-          return   "s";
+          return "s";
         }
         private static ITrigger CreateTrigger(JobSchedule schedule)
         {
-            return TriggerBuilder
-                .Create()
+            ICronTrigger trigger =
+             (ICronTrigger)TriggerBuilder
+                .Create()               
                 .WithIdentity($"{schedule.JobType.FullName}.trigger")
-                .WithCronSchedule(schedule.CronExpression)
+                .WithCronSchedule(schedule.CronExpression
+        )
                 .WithDescription(schedule.CronExpression)
+         
                 .Build();
+            ((CronTriggerImpl)trigger).MisfireInstruction = MisfireInstruction.CronTrigger.DoNothing;
+           
+            return trigger;
         }
     }
 }

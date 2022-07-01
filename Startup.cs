@@ -41,11 +41,12 @@ namespace CompleteQuartzExample
             services.AddRazorPages();
             services.AddServerSideBlazor();
       services.AddSingleton<IWeather, WeatherForecastService>();
-       services.AddSingleton<IJobFactory, SingletonJobFactory>();
+   
+            services.AddSingleton<IJobFactory, SingletonJobFactory>();
             services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
             services.AddSingleton<PrintJob>();
             services.AddScoped<AnimalService>();
-                    services.AddSingleton<PoemService>();
+           services.AddSingleton<PoemService>();
             services.AddSingleton<QuartzMultiJob>();
             services.AddSingleton(new JobSchedule(
                 jobType: typeof(PrintJob),

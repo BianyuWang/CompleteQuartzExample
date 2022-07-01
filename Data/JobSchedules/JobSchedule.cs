@@ -13,6 +13,7 @@ namespace CompleteQuartzExample.Data.JobSchedules
             CronExpression = cronExpression;
         }
 
+        
         public Type JobType { get; }
         public string CronExpression { get; }
     }
