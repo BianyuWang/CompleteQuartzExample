@@ -13,3 +13,7 @@ The total length of the poem is 8 sentences, and when the loading is complete, a
 ###Will update soon, working on adding schedulers that allow users to setup.
 ### 23/06 fancy stuff added, user can choose animal from list, can choose the time of repeat and also interval time, or customize the progress bar style
 ![image](https://user-images.githubusercontent.com/54047263/175432931-0e9049ca-1e4e-4fcf-b99d-c3b191dec71a.png)
+
+###Finally implemented the pause and resume for global trigger, although not quite the same as I understand, but there is no functional problem ion, 
+### Remember, this is only a quick experimental project, and will continue to add interesting features at next stage.
+###  happy every day to mySelf
