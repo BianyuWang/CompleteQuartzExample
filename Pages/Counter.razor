@@ -1,22 +1,31 @@
-@page "/counter"
 
-<h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+
+@page "/counter/{DefaultCount:int?}"
+
+<p>Current count: <span id="counterVal">@currentCount</span></p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
-
-
-
-
-
-
 
 @code {
     private int currentCount = 0;
 
-    private void IncrementCount()
+
+    [Parameter]
+    public int DefaultCount { get; set; }
+
+    protected override void OnParametersSet()
     {
-        currentCount++;
+        if (DefaultCount != 0)
+        {
+            currentCount = DefaultCount;
+        }
     }
-}
+    [Parameter]
+    public EventCallback<MouseEventArgs>    onclick { get; set; }
+
+    public void IncrementCount()
+    {
+    currentCount++;
+    }
+    }
