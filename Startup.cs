@@ -6,6 +6,7 @@ using CompleteQuartzExample.Data.JobSchedules;
 using CompleteQuartzExample.Data.QuartzService;
 using CompleteQuartzExample.Data.Services;
 using CompleteQuartzExample.Hubs;
+using Fluxor;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
@@ -54,6 +55,13 @@ namespace CompleteQuartzExample
       services.AddHostedService<QuartzHostedService>();
        services.AddSingleton(provider => GetScheduler());
             services.AddSignalR();
+
+            services.AddFluxor(config =>
+            {
+                config.ScanAssemblies(typeof(Program).Assembly)
+                    .UseReduxDevTools();
+            });
+
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(

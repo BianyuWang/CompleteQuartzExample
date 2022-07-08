@@ -4,8 +4,13 @@
 @using System.Timers
 @using System.Linq
 @using CompleteQuartzExample.Data.Models
-@inject AnimalService AnimalService
 
+
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+
+@inject IState<CompleteQuartzExample.Store.TriggerState> TriggerState
+@inject IDispatcher Dispatcher
+@inject AnimalService AnimalService
 @inject NavigationManager _NavigationManager
 @inject PoemService  _poemService
 
@@ -17,10 +22,10 @@
     <div class="row">
         <div id="Title"> <h3>The Strongest Girl I Ever Knew</h3></div>
         <div class="jobBTN">
-            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="pause" Size="ButtonSize.Small" Class="m-1" Disabled="@disableP"  Click="(arg)=>pauseDefault(true)" />
-                  </div>
+            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="pause" Size="ButtonSize.Small" Class="m-1" Disabled="@disableP" Click="(arg)=>pauseDefault(true)" />
+        </div>
         <div class="jobBTN">
-            <RadzenButton  ButtonStyle="ButtonStyle.Primary" Icon="cached" Size="ButtonSize.Small" Disabled="disableR"  Class="m-1" Click="(arg)=>pauseDefault(false)"  />
+            <RadzenButton ButtonStyle="ButtonStyle.Primary" Icon="cached" Size="ButtonSize.Small" Disabled="disableR" Class="m-1" Click="(arg)=>pauseDefault(false)" />
         </div>
     </div>
     <div id="Source">
@@ -47,7 +52,8 @@
     </div>
 
     <div id="Info">
-        @info
+        <p>@info</p>
+        <p class="mark">Current trigger Count : @currentCount</p>
     </div>
     <div id="countdown" style=" display:@display;">
         Will repeat in <span style="color:red">@counter</span> seconds
@@ -112,7 +118,8 @@
 @if (mulJobProgress.Count > 0)
 {
     @foreach (var m in mulJobProgress)
-    {if (m.current > m.total)
+    {
+        if (m.current > m.total)
             m.current = m.total;
         var result = ((double)m.current / (double)m.total) * 100.0;
         <div class="row w-100">
@@ -124,15 +131,15 @@
                 <RadzenProgressBar ProgressBarStyle="m.style" @bind-Value="@result" />
             </div>
             <div>
-                @m.animal.Name, 
+                @m.animal.Name,
                 @for (int i = 0; i < m.current; i++)
                 {<span>@m.animal.Sound, </span>
 
-                    if (i ==m.total-1)
-                    { 
-            <span> last interation, will stop</span>
-                    }
+                if (i == m.total - 1)
+                {
+                    <span> last interation, will stop</span>
                 }
+            }
             </div>
         </div>
     }}
@@ -142,12 +149,13 @@
     }
 
     .jobBTN {
-      font-family:'Times New Roman';
-      margin-left: 20px;
+        font-family: 'Times New Roman';
+        margin-left: 20px;
     }
 </style>
 
 @code {
+    private int currentCount => TriggerState.Value.TriggerCount;
     List<MulJobProgress> mulJobProgress = new List<MulJobProgress>();
 
     bool disableR = true;
@@ -177,7 +185,7 @@
 
     void pauseDefault(bool pause)
     {
-       disableR = disableP ? true : false;
+        disableR = disableP ? true : false;
         disableP = pause;
         AnimalService.PauseJob(pause);
         StateHasChanged();
@@ -186,8 +194,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-       disableR = disableP ? false : true;
-        progressBarStyles =   Enum.GetValues(typeof(ProgressBarStyle)).Cast<ProgressBarStyle>().ToList();
+        disableR = disableP ? false : true;
+        progressBarStyles = Enum.GetValues(typeof(ProgressBarStyle)).Cast<ProgressBarStyle>().ToList();
         hubconnection = new HubConnectionBuilder()
         .WithUrl(_NavigationManager.ToAbsoluteUri("/UpdateHub"))
         .Build();
@@ -196,8 +204,8 @@
 
         jobPara.animal = animals.FirstOrDefault();
 
-        hubconnection.On<string, string, int, int, string, string,string>
-            ("updateMultiTrigger", (msg, key, current, total, animalName, sound,styleStr) =>
+        hubconnection.On<string, string, int, int, string, string, string>
+            ("updateMultiTrigger", (msg, key, current, total, animalName, sound, styleStr) =>
             {
                 var job = mulJobProgress.Where(j => j.key.Equals(key)).FirstOrDefault();
 
@@ -224,7 +232,11 @@
             ("updatePoemList", (msg) =>
             {
 
+
                 poemLines = _poemService.GetPoemLineList();
+
+                Dispatcher.Dispatch(new CompleteQuartzExample.Store.AddTriggerCounter());
+
                 if (poemLines.Count != 8)
                 {
                     info = "To be continued";
@@ -285,4 +297,4 @@
 
 
 
-                            }
+}
